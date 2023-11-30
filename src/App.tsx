@@ -19,8 +19,8 @@ interface UserData {
 function App() {
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
-    const [userProjects, setUserProjects] = useState<Array | null>(null);
-    const [currentProject, setCurrentProject] = useState<Array | null>(null);
+    const [userProjects, setUserProjects] = useState<Array<string> | null>(null);
+    const [currentProject, setCurrentProject] = useState<Array<string> | null>(null);
     //const [submitting, setSubmitting] = useState(false);
     //const [formData, setFormData] = useReducer(formReducer, {});
 
