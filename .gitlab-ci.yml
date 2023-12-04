@@ -18,4 +18,4 @@ deploy:
     - echo "$ID_RSA" >> ~/.ssh/id_dsa
     - chmod 600 ~/.ssh/id_dsa
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - rsync -rav --delete dist/ $SERVER_USER@$SERVER_IP:/projects/aboo/frontend/
+    - rsync -rav --delete dist/ root@aboo.ru:/projects/aboo/frontend/
