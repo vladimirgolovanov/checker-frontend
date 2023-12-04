@@ -91,7 +91,7 @@ function App() {
 
     useEffect(() => {
         // Выполняем запрос к /api/user
-        axios.get<UserData>('http://localhost:37011/api/user')
+        axios.get<UserData>('/api/user')
             .then(response => {
                 const user_id = response.data.user_id;
                 const email = response.data.email;
@@ -104,7 +104,7 @@ function App() {
                 if (user_id) {
                     //console.log(projects);
                     const currentProject = Object.keys(projects)[0];
-                    axios.post('http://localhost:37011/api/load_project', {project_id: currentProject})
+                    axios.post('/api/load_project', {project_id: currentProject})
                         .then(response => {
                             //console.log(response.data[0]);
                             setCurrentProject(response.data[0]);
@@ -120,7 +120,7 @@ function App() {
     }, []);
 
     function loginWithGoogle() {
-        window.location.href = 'http://localhost:37011/api/google-oauth-redirect'; // Замените на нужный URL
+        window.location.href = '/api/google-oauth-redirect'; // Замените на нужный URL
     }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -128,7 +128,7 @@ function App() {
         const target = event.currentTarget;
 
         //setSubmitting(true);
-        axios.post('http://localhost:37011/api/check_name', new FormData(target))
+        axios.post('/api/check_name', new FormData(target))
             .then(response => {
                 if (response.data.success === true && event.target !== undefined) {
                     const checkedName = target.checkedName.value;
