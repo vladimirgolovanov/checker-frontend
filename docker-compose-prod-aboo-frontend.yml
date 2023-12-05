@@ -1,9 +1,9 @@
 version: '3.1'
 services:
-  vite:
-    image: registry.gitlab.com/aboo9442027/frontend/vite:latest
+  aboo-vite-frontend:
+    image: registry.gitlab.com/aboo9442027/frontend/aboo-vite-frontend:latest
     build:
       dockerfile: Dockerfile-prod
-    container_name: aboo-fronend-prod
+    container_name: aboo-vite-frontend
     ports:
       - '31311:80'
