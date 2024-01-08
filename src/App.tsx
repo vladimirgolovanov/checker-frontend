@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 
 //, useReducer
-import {Navbar, Container, Button, Row, Col, Nav, Badge, Form} from 'react-bootstrap'
+import {Navbar, Container, Button, Row, Col, Nav, Form} from 'react-bootstrap'
 import axios from "axios";
+import NameBadge from "./Components/NameBadge.tsx";
 
 interface UserData {
     user_id: string;
@@ -35,6 +36,9 @@ interface Namespace {
 }*/
 
 function App() {
+    //const baseUrl : string | "/" = process.env.BASE_API_URL;
+    //console.log(baseUrl);
+
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     /*const [userProjects, setUserProjects] = useState<{
@@ -83,9 +87,9 @@ function App() {
         3: ".net domain",
         4: ".io domain",
         7: "npm username",
-        8: "github username",
-        9: "telegram channel",
-        10: "telegram bot",
+        8: "GitHub username",
+        9: "Telegram channel",
+        10: "Telegram bot",
         //todo: 11: "etsy",
     };
 
@@ -128,7 +132,7 @@ function App() {
         const target = event.currentTarget;
 
         //setSubmitting(true);
-        axios.post('/api/check_name', new FormData(target))
+        axios.post('http://localhost:37011/api/check_name', new FormData(target))
             .then(response => {
                 if (response.data.success === true && event.target !== undefined) {
                     const checkedName = target.checkedName.value;
@@ -200,9 +204,10 @@ function App() {
                                     return (
                                         <span key={namespace_index}>
                                             {' '}
-                                            <Badge bg={namespace.result ? "success" : "danger"}>
-                                                {namespaceNames[namespace.namespace_id]}
-                                            </Badge>
+                                            <NameBadge
+                                                name={namespaceNames[namespace.namespace_id]}
+                                                result={namespace.result}
+                                            ></NameBadge>
                                         </span>
                                     )
                                 })}
