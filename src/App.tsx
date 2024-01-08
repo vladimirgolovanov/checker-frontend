@@ -132,7 +132,7 @@ function App() {
         const target = event.currentTarget;
 
         //setSubmitting(true);
-        axios.post('http://localhost:37011/api/check_name', new FormData(target))
+        axios.post('/api/check_name', new FormData(target))
             .then(response => {
                 if (response.data.success === true && event.target !== undefined) {
                     const checkedName = target.checkedName.value;
