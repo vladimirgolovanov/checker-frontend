@@ -26,19 +26,9 @@ interface Namespace {
     result: number;
 }
 
-//type CurrentProjectType <>
-
-/*const formReducer = (state, event) => {
-    return {
-        ...state,
-        [event.target.name]: event.target.value
-    }
-}*/
+const baseUrl = import.meta.env.BASE_API_URL || '/';
 
 function App() {
-    //const baseUrl : string | "/" = process.env.BASE_API_URL;
-    //console.log(baseUrl);
-
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     /*const [userProjects, setUserProjects] = useState<{
@@ -95,7 +85,7 @@ function App() {
 
     useEffect(() => {
         // Выполняем запрос к /api/user
-        axios.get<UserData>('/api/user')
+        axios.get<UserData>(baseUrl + 'api/user')
             .then(response => {
                 const user_id = response.data.user_id;
                 const email = response.data.email;
@@ -107,16 +97,13 @@ function App() {
                 let projectId;
                 // Здесь можно вызвать нужные функции на основе полученного user_id
                 if (user_id) {
-                    //console.log(projects);
                     projectId = Object.keys(projects)[0];
                 } else {
                     projectId = localStorage.getItem('sessionId');
                 }
                 if (projectId) {
-                    console.log(projectId);
-                    axios.post('/api/load_project', {project_id: projectId})
+                    axios.post(baseUrl + 'api/load_project', {project_id: projectId})
                     .then(response => {
-                        console.log(response.data);
                         setCurrentProject({
                             projectName: "My project",
                             names: response.data
@@ -133,14 +120,13 @@ function App() {
     }, []);
 
     function loginWithGoogle() {
-        window.location.href = '/api/google-oauth-redirect'; // Замените на нужный URL
+        window.location.href = baseUrl + 'api/google-oauth-redirect'; // Замените на нужный URL
     }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const target = event.currentTarget;
         const formData = new FormData(target);
-        //console.log(userUuid);
 
         let userUuid = localStorage.getItem('sessionId');
         if (!userUuid) {
@@ -151,7 +137,7 @@ function App() {
         formData.set('user_prefix', userUuid);
 
         //setSubmitting(true);
-        axios.post('/api/check_name', formData)
+        axios.post(baseUrl + 'api/check_name', formData)
             .then(response => {
                 if (response.status !== 200) {
                     alert('smth goes wrong');
@@ -222,21 +208,20 @@ function App() {
                 </Nav>
 
                 <ul className="list-group list-group-flush">
-                    {currentProject && Object.keys(currentProject.names).reverse().map(function (key: number) {
+                    {currentProject && Object.keys(currentProject.names).reverse().map(function (key: any) {
                         let nameItem = currentProject.names[key];
-                        return <ul>
-                            {<li key={key}>1 {nameItem.name}</li>}
-                            {Object.keys(nameItem.namespaces).map(function (namespaceKey: number) {
-                                console.log('t');
-                                console.log(nameItem.namespaces[namespaceKey]);
-                                let namespace = nameItem.namespaces[namespaceKey];
-                                return (
-                                    <span key="namespaceKey"><NameBadge
-                                        name={namespaceNames[namespace.namespace_id]}
-                                        result={namespace.result} /></span>
-                                )                                
-                            })}
-                        </ul>
+                        return (
+                            <li key={key}>{nameItem.name}<br />
+                                {Object.keys(nameItem.namespaces).map(function (namespaceKey: any) {
+                                    let namespace = nameItem.namespaces[namespaceKey];
+                                    return (
+                                        <span key={namespaceKey}><NameBadge
+                                            name={namespaceNames[namespace.namespace_id]}
+                                            result={namespace.result} /> </span>
+                                    )
+                                })}
+                            </li>
+                        )
                     })}
                 </ul>
             </Container>
