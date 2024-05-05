@@ -104,18 +104,27 @@ function App() {
                 setUserEmail(email);
                 //setUserProjects(projects);
 
+                let projectId;
                 // Здесь можно вызвать нужные функции на основе полученного user_id
                 if (user_id) {
                     //console.log(projects);
-                    const currentProject = Object.keys(projects)[0];
-                    axios.post('/api/load_project', {project_id: currentProject})
-                        .then(response => {
-                            //console.log(response.data[0]);
-                            setCurrentProject(response.data[0]);
-                        })
-                        .catch(error => {
-                            console.error("Error fetching project names:", error);
+                    projectId = Object.keys(projects)[0];
+                } else {
+                    projectId = localStorage.getItem('sessionId');
+                }
+                if (projectId) {
+                    console.log(projectId);
+                    axios.post('/api/load_project', {project_id: projectId})
+                    .then(response => {
+                        console.log(response.data);
+                        setCurrentProject({
+                            projectName: "My project",
+                            names: response.data
                         });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching project names:", error);
+                    });
                 }
             })
             .catch(error => {
@@ -130,23 +139,38 @@ function App() {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const target = event.currentTarget;
+        const formData = new FormData(target);
+        //console.log(userUuid);
+
+        let userUuid = localStorage.getItem('sessionId');
+        if (!userUuid) {
+            userUuid = crypto.randomUUID();
+            localStorage.setItem('sessionId', userUuid);
+        }
+        console.log(userUuid);
+        formData.set('user_prefix', userUuid);
 
         //setSubmitting(true);
-        axios.post('/api/check_name', new FormData(target))
+        axios.post('/api/check_name', formData)
             .then(response => {
+                if (response.status !== 200) {
+                    alert('smth goes wrong');
+                }
+                //alert(response.data.result);
                 if (response.data.success === true && event.target !== undefined) {
-                    const checkedName = target.checkedName.value;
+                    console.log(response.data.result);
+                    //const checkedName = target.checkedName.value;
                     //const checkedName = target.elements.name.value;
-                    setCurrentProject(prevState => ({
-                        ...prevState,
-                        names: [{
-                            name: checkedName,
-                            namespaces: response.data.result,
-                        }, ...prevState.names]
-                    }));
+                    setCurrentProject({
+                        projectName: "My project",
+                        names: response.data.result
+                    });
                 } else {
                     console.log('err');
                 }
+            })
+            .catch(function (error) {
+                alert(error)
             });
     };
 
@@ -179,8 +203,11 @@ function App() {
                         <Col xs="8">
                             {Object.keys(namespaceNames).map(function (item, index: number) {
                                 return <div key={index}>
-                                    <label htmlFor="{`nametype-${index}`}">
-                                        <input type="checkbox" name={`namespaces[${item}]`} id="{`nametype-${index}`}" /> {namespaceNames[index]}</label>
+                                    <label htmlFor={'nametype-' + index.toString()}>
+                                        <input
+                                            type="checkbox"
+                                            name={`namespaces[${item}]`} id={'nametype-' + index.toString()}
+                                        /> {namespaceNames[index]}</label>
                                 </div>
                             })}
                         </Col>
@@ -195,24 +222,21 @@ function App() {
                 </Nav>
 
                 <ul className="list-group list-group-flush">
-                    {currentProject && currentProject.names.map(function (item, index) {
-                        return (
-                            <li className="list-group-item" key={index}>
-                                {item.name}
-                                {item.namespaces.map(function (namespace, namespace_index) {
-                                    // todo: text-bg-danger etc
-                                    return (
-                                        <span key={namespace_index}>
-                                            {' '}
-                                            <NameBadge
-                                                name={namespaceNames[namespace.namespace_id]}
-                                                result={namespace.result}
-                                            ></NameBadge>
-                                        </span>
-                                    )
-                                })}
-                            </li>
-                        )
+                    {currentProject && Object.keys(currentProject.names).reverse().map(function (key: number) {
+                        let nameItem = currentProject.names[key];
+                        return <ul>
+                            {<li key={key}>1 {nameItem.name}</li>}
+                            {Object.keys(nameItem.namespaces).map(function (namespaceKey: number) {
+                                console.log('t');
+                                console.log(nameItem.namespaces[namespaceKey]);
+                                let namespace = nameItem.namespaces[namespaceKey];
+                                return (
+                                    <span key="namespaceKey"><NameBadge
+                                        name={namespaceNames[namespace.namespace_id]}
+                                        result={namespace.result} /></span>
+                                )                                
+                            })}
+                        </ul>
                     })}
                 </ul>
             </Container>
