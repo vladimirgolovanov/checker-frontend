@@ -80,15 +80,16 @@ function App() {
         8: "GitHub username",
         9: "Telegram channel",
         10: "Telegram bot",
+        11: "Etsy shop",
         //todo: 11: "etsy",
     };
 
     const socialNetworkIndexes: number[] = [5, 6, 9, 10, 0];
+    const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
     const domainIndexes: number[] = [1, 2, 3, 4];
 
     useEffect(() => {
-        // Выполняем запрос к /api/user
         axios.get<UserData>(baseUrl + 'api/user')
             .then(response => {
                 const user_id = response.data.user_id;
@@ -99,7 +100,6 @@ function App() {
                 //setUserProjects(projects);
 
                 let projectId;
-                // Здесь можно вызвать нужные функции на основе полученного user_id
                 if (user_id) {
                     projectId = Object.keys(projects)[0];
                 } else {
@@ -124,7 +124,7 @@ function App() {
     }, []);
 
     function loginWithGoogle() {
-        window.location.href = baseUrl + 'api/google-oauth-redirect'; // Замените на нужный URL
+        window.location.href = baseUrl + 'api/google-oauth-redirect';
     }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -195,7 +195,18 @@ function App() {
                                         <input
                                             type="checkbox"
                                             name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                            {... (value === 0 ? {disabled: true} : {})} // временно выключим инстаграм
+                                            {... (value === 0 ? {disabled: true} : {})} // temporary disable Instagram
+                                        /> {namespaceNames[value]}</label>
+                                </div>
+                            })}
+                        </Col>
+                        <Col xs="2">
+                            {shopsIndexes.map(function (value: number, i: number) {
+                                return <div key={i}>
+                                    <label htmlFor={'nametype-' + value.toString()}>
+                                        <input
+                                            type="checkbox"
+                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
                                         /> {namespaceNames[value]}</label>
                                 </div>
                             })}
