@@ -83,6 +83,10 @@ function App() {
         //todo: 11: "etsy",
     };
 
+    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 0];
+    const devIndexes: number[] = [7, 8];
+    const domainIndexes: number[] = [1, 2, 3, 4];
+
     useEffect(() => {
         // Выполняем запрос к /api/user
         axios.get<UserData>(baseUrl + 'api/user')
@@ -180,20 +184,41 @@ function App() {
                                 placeholder="name or username"
                                 id="checkedName"
                                 className="form-control-lg"
-
                             />{/*onChange={handleChange}*/}
                             <Button type="submit" variant={"primary"} className="form-control-lg">Submit</Button>
                             <div className="form-text">Type the desirable name to check if there are free usernames or domain names for it</div>
                         </Col>
-
-                        <Col xs="8">
-                            {Object.keys(namespaceNames).map(function (item, index: number) {
-                                return <div key={index}>
-                                    <label htmlFor={'nametype-' + index.toString()}>
+                        <Col xs="2">
+                            {socialNetworkIndexes.map(function (value: number, i: number) {
+                                return <div key={i}>
+                                    <label htmlFor={'nametype-' + value.toString()}>
                                         <input
                                             type="checkbox"
-                                            name={`namespaces[${item}]`} id={'nametype-' + index.toString()}
-                                        /> {namespaceNames[index]}</label>
+                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                            {... (value === 0 ? {disabled: true} : {})} // временно выключим инстаграм
+                                        /> {namespaceNames[value]}</label>
+                                </div>
+                            })}
+                        </Col>
+                        <Col xs="2">
+                            {devIndexes.map(function (value: number, i: number) {
+                                return <div key={i}>
+                                    <label htmlFor={'nametype-' + value.toString()}>
+                                        <input
+                                            type="checkbox"
+                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                        /> {namespaceNames[value]}</label>
+                                </div>
+                            })}
+                        </Col>
+                        <Col xs="2">
+                            {domainIndexes.map(function (value: number, i: number) {
+                                return <div key={i}>
+                                    <label htmlFor={'nametype-' + value.toString()}>
+                                        <input
+                                            type="checkbox"
+                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                        /> {namespaceNames[value]}</label>
                                 </div>
                             })}
                         </Col>
