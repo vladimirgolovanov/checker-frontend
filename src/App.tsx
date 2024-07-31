@@ -69,22 +69,22 @@ function App() {
 
     // todo: enum
     const namespaceNames: {[index: number]: string} = {
-        0: "Instagram username",
-        5: "Tiktok username",
-        6: "Snapchat username",
+        0: "Instagram",
+        5: "Tiktok",
+        6: "Snapchat",
         1: ".com domain",
         2: ".ru domain",
         3: ".net domain",
         4: ".io domain",
         7: "npm username",
-        8: "GitHub username",
+        8: "GitHub",
         9: "Telegram channel",
         10: "Telegram bot",
         11: "Etsy shop",
-        //todo: 11: "etsy",
+        12: "Pinterest",
     };
 
-    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 0];
+    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12, 0];
     const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
     const domainIndexes: number[] = [1, 2, 3, 4];
