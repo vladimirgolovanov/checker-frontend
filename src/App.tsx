@@ -177,7 +177,7 @@ function App() {
             <Container>
                 <form onSubmit={handleSubmit}>
                     <Row>
-                        <Col xs="4">
+                        <Col md="4" xs="6">
                             <Form.Control
                                 type="text"
                                 name="name"
@@ -188,60 +188,68 @@ function App() {
                             <Button type="submit" variant={"primary"} className="form-control-lg">Submit</Button>
                             <div className="form-text">Type the desirable name to check if there are free usernames or domain names for it</div>
                         </Col>
-                        <Col xs="2">
-                            {socialNetworkIndexes.map(function (value: number, i: number) {
-                                return <div key={i}>
-                                    <label htmlFor={'nametype-' + value.toString()}>
-                                        <input
-                                            type="checkbox"
-                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                            {... (value === 0 ? {disabled: true} : {})} // temporary disable Instagram
-                                        /> {namespaceNames[value]}</label>
-                                </div>
-                            })}
-                        </Col>
-                        <Col xs="2">
-                            {shopsIndexes.map(function (value: number, i: number) {
-                                return <div key={i}>
-                                    <label htmlFor={'nametype-' + value.toString()}>
-                                        <input
-                                            type="checkbox"
-                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                        /> {namespaceNames[value]}</label>
-                                </div>
-                            })}
-                        </Col>
-                        <Col xs="2">
-                            {devIndexes.map(function (value: number, i: number) {
-                                return <div key={i}>
-                                    <label htmlFor={'nametype-' + value.toString()}>
-                                        <input
-                                            type="checkbox"
-                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                        /> {namespaceNames[value]}</label>
-                                </div>
-                            })}
-                        </Col>
-                        <Col xs="2">
-                            {domainIndexes.map(function (value: number, i: number) {
-                                return <div key={i}>
-                                    <label htmlFor={'nametype-' + value.toString()}>
-                                        <input
-                                            type="checkbox"
-                                            name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                        /> {namespaceNames[value]}</label>
-                                </div>
-                            })}
+                        <Col md="8" xs="6">
+                            <Row>
+                                <Col md="3" xs="12">
+                                    <b>Social</b>
+                                    {socialNetworkIndexes.map(function (value: number, i: number) {
+                                        return <div key={i}>
+                                            <label htmlFor={'nametype-' + value.toString()}>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                                    {... (value === 0 ? {disabled: true} : {})} // temporary disable Instagram
+                                                /> {namespaceNames[value]}</label>
+                                        </div>
+                                    })}
+                                </Col>
+                                <Col md="3" xs="12">
+                                    <b>Shops</b>
+                                    {shopsIndexes.map(function (value: number, i: number) {
+                                        return <div key={i}>
+                                            <label htmlFor={'nametype-' + value.toString()}>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                                /> {namespaceNames[value]}</label>
+                                        </div>
+                                    })}
+                                </Col>
+                                <Col md="3" xs="12">
+                                    <b>Dev</b>
+                                    {devIndexes.map(function (value: number, i: number) {
+                                        return <div key={i}>
+                                            <label htmlFor={'nametype-' + value.toString()}>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                                /> {namespaceNames[value]}</label>
+                                        </div>
+                                    })}
+                                </Col>
+                                <Col md="3" xs="12">
+                                    <b>Domains</b>
+                                    {domainIndexes.map(function (value: number, i: number) {
+                                        return <div key={i}>
+                                            <label htmlFor={'nametype-' + value.toString()}>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
+                                                /> {namespaceNames[value]}</label>
+                                        </div>
+                                    })}
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
                 </form>
 
-                <Nav className="nav-tabs mb-3">
+                {/* <Nav className="nav-tabs mb-3"> */}
                     {/*{userProjects && Object.keys(userProjects).map(function (projectKey) {
                         // todo: отметить выбранный классом active
                         return <a key={projectKey} className="nav-link active">{userProjects[projectKey]}</a>
                     })}*/}
-                </Nav>
+                {/* </Nav> */}
 
                 <ul className="list-group list-group-flush">
                     {currentProject && Object.keys(currentProject.names).reverse().map(function (key: any) {
