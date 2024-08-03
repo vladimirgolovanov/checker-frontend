@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 //, useReducer
-import {Navbar, Container, Button, Row, Col, Nav, Form} from 'react-bootstrap'
+import {Navbar, Container, Button, Row, Col, Form} from 'react-bootstrap'
 import axios from "axios";
 import NameBadge from "./Components/NameBadge.tsx";
 
