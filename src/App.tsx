@@ -56,12 +56,12 @@ function App() {
         12: "Pinterest",
     };
 
-    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12, 0];
-    const shopsIndexes: number[] = [11];
+    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12];
+    // const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
 
-    const presetZones = ['com', 'ai', 'crypto'];
-    const suggestedZones = ['.dev', '.eth', '.io', '.cc', '.shop', '.coach', '.xyz'];
+    const presetZones = ['com', 'ai'];
+    const suggestedZones = ['.dev', '.crypto', '.eth', '.io', '.cc', '.shop', '.coach', '.xyz'];
     const [selectedZones, setSelectedZones] = useState<string[]>([]);
     const [addedZones, setAddedZones] = useState<string[]>(() => {
         try { return JSON.parse(localStorage.getItem('addedZones') ?? '[]'); } catch { return []; }
@@ -191,8 +191,8 @@ function App() {
                                 className="form-control-lg"
                                 autoComplete="off"
                             />{/*onChange={handleChange}*/}
-                            <Button type="submit" variant={"primary"} className="form-control-lg">Submit</Button>
                             <div className="form-text">Type the desirable name to check if there are free usernames or domain names for it</div>
+                            <Button type="submit" variant={"primary"} className="form-control-lg">Submit</Button>
                         </Col>
                         <Col md="8" xs="6">
                             <Row>
@@ -209,18 +209,18 @@ function App() {
                                         </div>
                                     })}
                                 </Col>
-                                <Col md="3" xs="12">
-                                    <b>Shops</b>
-                                    {shopsIndexes.map(function (value: number, i: number) {
-                                        return <div key={i}>
-                                            <label htmlFor={'nametype-' + value.toString()}>
-                                                <input
-                                                    type="checkbox"
-                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                                /> {namespaceNames[value]}</label>
-                                        </div>
-                                    })}
-                                </Col>
+                                {/*<Col md="3" xs="12">*/}
+                                {/*    <b>Shops</b>*/}
+                                {/*    {shopsIndexes.map(function (value: number, i: number) {*/}
+                                {/*        return <div key={i}>*/}
+                                {/*            <label htmlFor={'nametype-' + value.toString()}>*/}
+                                {/*                <input*/}
+                                {/*                    type="checkbox"*/}
+                                {/*                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}*/}
+                                {/*                /> {namespaceNames[value]}</label>*/}
+                                {/*        </div>*/}
+                                {/*    })}*/}
+                                {/*</Col>*/}
                                 <Col md="3" xs="12">
                                     <b>Dev</b>
                                     {devIndexes.map(function (value: number, i: number) {

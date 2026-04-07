@@ -9,23 +9,29 @@ interface NameBadgeProps {
 const NameBadge: React.FC<NameBadgeProps> = ({name, result}) => {
     let backgroundColor: string = 'failed';
 
+    let title = 'Failed';
+
     /* todo: free 1, used 2, pending 3, failed 4 */
     switch (result) {
-        case 1: // free
+        case 1:
             backgroundColor = 'success';
+            title = 'Free';
             break;
-        case 2: // used
+        case 2:
             backgroundColor = 'danger';
+            title = 'Used';
             break;
-        case 3: // pending
+        case 3:
             backgroundColor = 'secondary';
+            title = 'Pending';
             break;
-        case 4: // failed
+        case 4:
             backgroundColor = 'dark';
+            title = 'Failed';
             break;
     }
     return (
-        <Badge bg={backgroundColor}>{name}</Badge>
+        <Badge bg={backgroundColor} title={title}>{name}</Badge>
     )
 }
 
