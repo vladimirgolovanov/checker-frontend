@@ -11,14 +11,9 @@ interface UserData {
     projects: string[];
 }
 
-interface CurrenProject {
-    projectName: string;
-    names: ProjectNames[];
-}
-
-interface ProjectNames {
-    name: string;
-    namespaces: Namespace[];
+interface CheckNameResponse {
+    results: Namespace[];
+    validation_errors: ValidationError[];
 }
 
 interface Namespace {
@@ -26,56 +21,26 @@ interface Namespace {
     result: number;
 }
 
+interface ValidationError {
+    namespace: number;
+    errors: string;
+}
+
 const baseUrl = import.meta.env.BASE_API_URL || '/';
 
 function App() {
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
-    /*const [userProjects, setUserProjects] = useState<{
-        name: string,
-        names: []
-    } | null>(null);*/
-    const [currentProject, setCurrentProject] = useState<CurrenProject>({
-        projectName: "My project",
-        names: [
-            /*{
-                name: "example",
-                namespaces: [
-                    {
-                        namespace_id: 1,
-                        result: 1,
-                    },
-                    {
-                        namespace_id: 2,
-                        result: 0,
-                    }
-                ]
-            },
-            {
-                name: "other",
-                namespaces: [
-                    {
-                        namespace_id: 1,
-                        result: 0,
-                    },
-                    {
-                        namespace_id: 2,
-                        result: 0,
-                    }
-                ]
-            }*/
-        ]
-    });
+    const [checkedName, setCheckedName] = useState<string | null>(null);
+    const [results, setResults] = useState<Namespace[]>([]);
+    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
     // todo: enum
     const namespaceNames: {[index: number]: string} = {
         0: "Instagram",
         5: "Tiktok",
         6: "Snapchat",
-        1: ".com domain",
-        2: ".ru domain",
-        3: ".net domain",
-        4: ".io domain",
+        1: "domain",
         7: "npm username",
         8: "GitHub",
         9: "Telegram channel",
@@ -87,44 +52,44 @@ function App() {
     const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12, 0];
     const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
-    const domainIndexes: number[] = [1, 2, 3, 4];
+    const domainIndexes: number[] = [1];
 
-    useEffect(() => {
-        axios.get<UserData>(baseUrl + 'api/user')
-            .then(response => {
-                const user_id = response.data.user_id;
-                const email = response.data.email;
-                const projects = response.data.projects;
-                setUserId(user_id);
-                setUserEmail(email);
-                //setUserProjects(projects);
-
-                let projectId;
-                if (user_id) {
-                    projectId = Object.keys(projects)[0];
-                } else {
-                    projectId = localStorage.getItem('sessionId');
-                }
-                if (projectId) {
-                    axios.post(baseUrl + 'api/load_project', {project_id: projectId})
-                    .then(response => {
-                        setCurrentProject({
-                            projectName: "My project",
-                            names: response.data
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error fetching project names:", error);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching user data:", error);
-            });
-    }, []);
+    // useEffect(() => {
+    //     axios.get<UserData>(baseUrl + 'api/user')
+    //         .then(response => {
+    //             const user_id = response.data.user_id;
+    //             const email = response.data.email;
+    //             const projects = response.data.projects;
+    //             setUserId(user_id);
+    //             setUserEmail(email);
+    //             //setUserProjects(projects);
+    //
+    //             let projectId;
+    //             if (user_id) {
+    //                 projectId = Object.keys(projects)[0];
+    //             } else {
+    //                 projectId = localStorage.getItem('sessionId');
+    //             }
+    //             if (projectId) {
+    //                 axios.post(baseUrl + 'api/load_project', {project_id: projectId})
+    //                 .then(response => {
+    //                     setCurrentProject({
+    //                         projectName: "My project",
+    //                         names: response.data
+    //                     });
+    //                 })
+    //                 .catch(error => {
+    //                     console.error("Error fetching project names:", error);
+    //                 });
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error("Error fetching user data:", error);
+    //         });
+    // }, []);
 
     function loginWithGoogle() {
-        window.location.href = baseUrl + 'api/google-oauth-redirect';
+        // window.location.href = baseUrl + 'api/google-oauth-redirect';
     }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -132,32 +97,21 @@ function App() {
         const target = event.currentTarget;
         const formData = new FormData(target);
 
-        let userUuid = localStorage.getItem('sessionId');
-        if (!userUuid) {
-            userUuid = crypto.randomUUID();
-            localStorage.setItem('sessionId', userUuid);
+        const name = formData.get('name') as string;
+        const namespaces: {id: number}[] = [];
+        for (const key of formData.keys()) {
+            const match = key.match(/^namespaces\[(\d+)\]$/);
+            if (match) {
+                namespaces.push({id: parseInt(match[1])});
+            }
         }
-        console.log(userUuid);
-        formData.set('user_prefix', userUuid);
+        const payload = {name, namespaces};
 
-        //setSubmitting(true);
-        axios.post(baseUrl + 'api/check_name', formData)
+        axios.post<CheckNameResponse>(baseUrl + 'api/check_name', payload)
             .then(response => {
-                if (response.status !== 200) {
-                    alert('smth goes wrong');
-                }
-                //alert(response.data.result);
-                if (response.data.success === true && event.target !== undefined) {
-                    console.log(response.data.result);
-                    //const checkedName = target.checkedName.value;
-                    //const checkedName = target.elements.name.value;
-                    setCurrentProject({
-                        projectName: "My project",
-                        names: response.data.result
-                    });
-                } else {
-                    console.log('err');
-                }
+                setCheckedName(name);
+                setResults(response.data.results ?? []);
+                setValidationErrors(response.data.validation_errors ?? []);
             })
             .catch(function (error) {
                 alert(error)
@@ -251,23 +205,23 @@ function App() {
                     })}*/}
                 {/* </Nav> */}
 
-                <ul className="list-group list-group-flush">
-                    {currentProject && Object.keys(currentProject.names).reverse().map(function (key: any) {
-                        let nameItem = currentProject.names[key];
-                        return (
-                            <li key={key}>{nameItem.name}<br />
-                                {Object.keys(nameItem.namespaces).map(function (namespaceKey: any) {
-                                    let namespace = nameItem.namespaces[namespaceKey];
-                                    return (
-                                        <span key={namespaceKey}><NameBadge
-                                            name={namespaceNames[namespace.namespace_id]}
-                                            result={namespace.result} /> </span>
-                                    )
-                                })}
-                            </li>
-                        )
-                    })}
-                </ul>
+                {checkedName && (
+                    <ul className="list-group list-group-flush">
+                        <li className="list-group-item">
+                            <strong>{checkedName}</strong><br />
+                            {results.map((ns, i) => (
+                                <span key={i}><NameBadge
+                                    name={namespaceNames[ns.namespace_id]}
+                                    result={ns.result} /> </span>
+                            ))}
+                            {validationErrors.map((ve, i) => (
+                                <span key={i} className="text-danger ms-1">
+                                    {namespaceNames[ve.namespace]}: {ve.errors}
+                                </span>
+                            ))}
+                        </li>
+                    </ul>
+                )}
             </Container>
         </div>
     )
