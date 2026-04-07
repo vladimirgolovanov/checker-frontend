@@ -5,12 +5,6 @@ import {Navbar, Container, Button, Row, Col, Form} from 'react-bootstrap'
 import axios from "axios";
 import NameBadge from "./Components/NameBadge.tsx";
 
-interface UserData {
-    user_id: string;
-    email: string;
-    projects: string[];
-}
-
 interface CheckNameResponse {
     results: Namespace[];
     validation_errors: ValidationError[];
@@ -36,8 +30,8 @@ interface HistoryEntry {
 const baseUrl = import.meta.env.BASE_API_URL || '/';
 
 function App() {
-    const [userId, setUserId] = useState<string | null>(null);
-    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [userId] = useState<string | null>(null);
+    const [userEmail] = useState<string | null>(null);
     const [history, setHistory] = useState<HistoryEntry[]>(() => {
         try { return JSON.parse(localStorage.getItem('history') ?? '[]'); } catch { return []; }
     });
