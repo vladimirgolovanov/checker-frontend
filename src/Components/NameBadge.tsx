@@ -11,7 +11,6 @@ const NameBadge: React.FC<NameBadgeProps> = ({name, result}) => {
 
     let title = 'Failed';
 
-    /* todo: free 1, used 2, pending 3, failed 4 */
     switch (result) {
         case 1:
             backgroundColor = 'success';
