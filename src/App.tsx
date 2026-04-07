@@ -19,6 +19,7 @@ interface CheckNameResponse {
 interface Namespace {
     namespace_id: number;
     result: number;
+    params?: string;
 }
 
 interface ValidationError {
@@ -52,7 +53,22 @@ function App() {
     const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12, 0];
     const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
-    const domainIndexes: number[] = [1];
+
+    const presetZones = ['com', 'ai', 'crypto'];
+    const suggestedZones = ['.dev', '.eth', '.io', '.cc', '.shop', '.coach', '.xyz'];
+    const [selectedZones, setSelectedZones] = useState<string[]>([]);
+    const [addedZones, setAddedZones] = useState<string[]>([]);
+    const [customZone, setCustomZone] = useState<string>('');
+    const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
+
+    const addCustomZone = () => {
+        const zone = customZone.trim().replace(/^\./, '');
+        if (!zone || addedZones.includes(zone) || presetZones.includes(zone)) return;
+        setAddedZones(prev => [...prev, zone]);
+        setSelectedZones(prev => [...prev, zone]);
+        setCustomZone('');
+        setZoneDropdownOpen(false);
+    };
 
     // useEffect(() => {
     //     axios.get<UserData>(baseUrl + 'api/user')
@@ -97,19 +113,39 @@ function App() {
         const target = event.currentTarget;
         const formData = new FormData(target);
 
-        const name = formData.get('name') as string;
-        const namespaces: {id: number}[] = [];
+        const name = formData.get('checker_name') as string;
+        const namespaces: ({id: number} | {id: number, params: {zones: string[]}})[] = [];
         for (const key of formData.keys()) {
             const match = key.match(/^namespaces\[(\d+)\]$/);
             if (match) {
                 namespaces.push({id: parseInt(match[1])});
             }
         }
+
+        const allZones = [...selectedZones];
+        if (allZones.length > 0) {
+            namespaces.push({id: 1, params: {zones: allZones}});
+        }
+
         const payload = {name, namespaces};
+
+        const pendingResults: Namespace[] = [];
+        for (const key of formData.keys()) {
+            const match = key.match(/^namespaces\[(\d+)\]$/);
+            if (match) {
+                pendingResults.push({namespace_id: parseInt(match[1]), result: 3});
+            }
+        }
+        for (const zone of allZones) {
+            pendingResults.push({namespace_id: 1, result: 3, params: zone});
+        }
+
+        setCheckedName(name);
+        setResults(pendingResults);
+        setValidationErrors([]);
 
         axios.post<CheckNameResponse>(baseUrl + 'api/check_name', payload)
             .then(response => {
-                setCheckedName(name);
                 setResults(response.data.results ?? []);
                 setValidationErrors(response.data.validation_errors ?? []);
             })
@@ -133,11 +169,12 @@ function App() {
                     <Row>
                         <Col md="4" xs="6">
                             <Form.Control
-                                type="text"
-                                name="name"
+                                type="search"
+                                name="checker_name"
                                 placeholder="name or username"
                                 id="checkedName"
                                 className="form-control-lg"
+                                autoComplete="off"
                             />{/*onChange={handleChange}*/}
                             <Button type="submit" variant={"primary"} className="form-control-lg">Submit</Button>
                             <div className="form-text">Type the desirable name to check if there are free usernames or domain names for it</div>
@@ -183,15 +220,77 @@ function App() {
                                 </Col>
                                 <Col md="3" xs="12">
                                     <b>Domains</b>
-                                    {domainIndexes.map(function (value: number, i: number) {
-                                        return <div key={i}>
-                                            <label htmlFor={'nametype-' + value.toString()}>
+                                    {[...presetZones, ...addedZones].map((zone) => (
+                                        <div key={zone}>
+                                            <label>
                                                 <input
                                                     type="checkbox"
-                                                    name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                                /> {namespaceNames[value]}</label>
+                                                    checked={selectedZones.includes(zone)}
+                                                    onChange={(e) => {
+                                                        setSelectedZones(prev =>
+                                                            e.target.checked
+                                                                ? [...prev, zone]
+                                                                : prev.filter(z => z !== zone)
+                                                        );
+                                                    }}
+                                                /> .{zone}
+                                            </label>
                                         </div>
-                                    })}
+                                    ))}
+                                    <div style={{marginTop: '4px', position: 'relative', display: 'flex', gap: '4px'}}>
+                                        <div style={{position: 'relative', flex: 1}}>
+                                            <input
+                                                type="text"
+                                                value={customZone}
+                                                onChange={(e) => setCustomZone(e.target.value)}
+                                                onFocus={() => setZoneDropdownOpen(true)}
+                                                onBlur={() => setTimeout(() => setZoneDropdownOpen(false), 150)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomZone(); } }}
+                                                placeholder="other zone"
+                                                className="form-control form-control-sm"
+                                                autoComplete="off"
+                                            />
+                                            {zoneDropdownOpen && (
+                                                <ul style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: 0,
+                                                    zIndex: 100,
+                                                    background: '#fff',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '4px',
+                                                    margin: '2px 0 0',
+                                                    padding: '2px 0',
+                                                    listStyle: 'none',
+                                                    width: '100%',
+                                                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                                                }}>
+                                                    {suggestedZones
+                                                        .filter(z => z.includes(customZone.replace(/^\./, '')) || customZone === '')
+                                                        .map(z => (
+                                                            <li
+                                                                key={z}
+                                                                onMouseDown={() => {
+                                                                    setCustomZone(z.replace(/^\./, ''));
+                                                                    setZoneDropdownOpen(false);
+                                                                }}
+                                                                style={{padding: '4px 10px', cursor: 'pointer'}}
+                                                                onMouseEnter={e => (e.currentTarget.style.background = '#f0f0f0')}
+                                                                onMouseLeave={e => (e.currentTarget.style.background = '')}
+                                                            >{z}</li>
+                                                        ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                        {customZone.trim() && (
+                                            <button
+                                                type="button"
+                                                onClick={addCustomZone}
+                                                className="btn btn-outline-secondary btn-sm"
+                                                style={{padding: '0 8px', lineHeight: 1}}
+                                            >+</button>
+                                        )}
+                                    </div>
                                 </Col>
                             </Row>
                         </Col>
@@ -211,7 +310,7 @@ function App() {
                             <strong>{checkedName}</strong><br />
                             {results.map((ns, i) => (
                                 <span key={i}><NameBadge
-                                    name={namespaceNames[ns.namespace_id]}
+                                    name={ns.namespace_id === 1 && ns.params ? `${checkedName}.${ns.params}` : namespaceNames[ns.namespace_id]}
                                     result={ns.result} /> </span>
                             ))}
                             {validationErrors.map((ve, i) => (
