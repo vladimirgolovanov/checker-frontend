@@ -1,0 +1,7 @@
+version: '3.1'
+services:
+  checker-frontend:
+    image: ghcr.io/vladimirgolovanov/checker-frontend:latest
+    container_name: checker-frontend
+    ports:
+      - '19001:80'
