@@ -129,7 +129,7 @@ function App() {
                 </Container>
             </Navbar>
             <Container>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === 'Enter' && (e.target as HTMLInputElement).type === 'checkbox') { e.preventDefault(); e.currentTarget.requestSubmit(); } }}>
                     <Row>
                         <Col md="4" xs="6">
                             <Form.Control
