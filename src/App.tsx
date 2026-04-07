@@ -27,14 +27,20 @@ interface ValidationError {
     errors: string;
 }
 
+interface HistoryEntry {
+    name: string;
+    results: Namespace[];
+    validationErrors: ValidationError[];
+}
+
 const baseUrl = import.meta.env.BASE_API_URL || '/';
 
 function App() {
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
-    const [checkedName, setCheckedName] = useState<string | null>(null);
-    const [results, setResults] = useState<Namespace[]>([]);
-    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+    const [history, setHistory] = useState<HistoryEntry[]>(() => {
+        try { return JSON.parse(localStorage.getItem('history') ?? '[]'); } catch { return []; }
+    });
 
     // todo: enum
     const namespaceNames: {[index: number]: string} = {
@@ -57,9 +63,14 @@ function App() {
     const presetZones = ['com', 'ai', 'crypto'];
     const suggestedZones = ['.dev', '.eth', '.io', '.cc', '.shop', '.coach', '.xyz'];
     const [selectedZones, setSelectedZones] = useState<string[]>([]);
-    const [addedZones, setAddedZones] = useState<string[]>([]);
+    const [addedZones, setAddedZones] = useState<string[]>(() => {
+        try { return JSON.parse(localStorage.getItem('addedZones') ?? '[]'); } catch { return []; }
+    });
     const [customZone, setCustomZone] = useState<string>('');
     const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
+
+    useEffect(() => { localStorage.setItem('history', JSON.stringify(history)); }, [history]);
+    useEffect(() => { localStorage.setItem('addedZones', JSON.stringify(addedZones)); }, [addedZones]);
 
     const addCustomZone = () => {
         const zone = customZone.trim().replace(/^\./, '');
@@ -140,14 +151,18 @@ function App() {
             pendingResults.push({namespace_id: 1, result: 3, params: zone});
         }
 
-        setCheckedName(name);
-        setResults(pendingResults);
-        setValidationErrors([]);
+        setHistory(prev => [
+            { name, results: pendingResults, validationErrors: [] },
+            ...prev.filter(e => e.name !== name),
+        ]);
 
         axios.post<CheckNameResponse>(baseUrl + 'api/check_name', payload)
             .then(response => {
-                setResults(response.data.results ?? []);
-                setValidationErrors(response.data.validation_errors ?? []);
+                setHistory(prev => prev.map((e, i) =>
+                    i === 0 && e.name === name
+                        ? { name, results: response.data.results ?? [], validationErrors: response.data.validation_errors ?? [] }
+                        : e
+                ));
             })
             .catch(function (error) {
                 alert(error)
@@ -304,21 +319,23 @@ function App() {
                     })}*/}
                 {/* </Nav> */}
 
-                {checkedName && (
+                {history.length > 0 && (
                     <ul className="list-group list-group-flush">
-                        <li className="list-group-item">
-                            <strong>{checkedName}</strong><br />
-                            {results.map((ns, i) => (
-                                <span key={i}><NameBadge
-                                    name={ns.namespace_id === 1 && ns.params ? `${checkedName}.${ns.params}` : namespaceNames[ns.namespace_id]}
-                                    result={ns.result} /> </span>
-                            ))}
-                            {validationErrors.map((ve, i) => (
-                                <span key={i} className="text-danger ms-1">
-                                    {namespaceNames[ve.namespace]}: {ve.errors}
-                                </span>
-                            ))}
-                        </li>
+                        {history.map((entry) => (
+                            <li key={entry.name} className="list-group-item">
+                                <strong>{entry.name}</strong><br />
+                                {entry.results.map((ns, i) => (
+                                    <span key={i}><NameBadge
+                                        name={ns.namespace_id === 1 && ns.params ? `${entry.name}.${ns.params}` : namespaceNames[ns.namespace_id]}
+                                        result={ns.result} /> </span>
+                                ))}
+                                {entry.validationErrors.map((ve, i) => (
+                                    <span key={i} className="text-danger ms-1">
+                                        {namespaceNames[ve.namespace]}: {ve.errors}
+                                    </span>
+                                ))}
+                            </li>
+                        ))}
                     </ul>
                 )}
             </Container>
