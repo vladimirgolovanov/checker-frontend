@@ -50,7 +50,7 @@ function App() {
         12: "Pinterest",
     };
 
-    const socialNetworkIndexes: number[] = [5, 6, 9, 10, 12];
+    const socialNetworkIndexes: number[] = [0, 5, 6, 9, 10, 12];
     // const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
 
@@ -198,7 +198,6 @@ function App() {
                                                 <input
                                                     type="checkbox"
                                                     name={`namespaces[${value}]`} id={'nametype-' + value.toString()}
-                                                    {... (value === 0 ? {disabled: true} : {})} // temporary disable Instagram
                                                 /> {namespaceNames[value]}</label>
                                         </div>
                                     })}
