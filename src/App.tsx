@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react'
 
 //, useReducer
 import {Navbar, Container, Button, Row, Col, Form} from 'react-bootstrap'
-import axios from "axios";
 import NameBadge from "./Components/NameBadge.tsx";
-
-interface CheckNameResponse {
-    results: Namespace[];
-    validation_errors: ValidationError[];
-}
 
 interface Namespace {
     namespace_id: number;
@@ -113,7 +107,7 @@ function App() {
         // window.location.href = baseUrl + 'api/google-oauth-redirect';
     }
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const target = event.currentTarget;
         const formData = new FormData(target);
@@ -134,33 +128,67 @@ function App() {
 
         const payload = {name, namespaces};
 
-        const pendingResults: Namespace[] = [];
-        for (const key of formData.keys()) {
-            const match = key.match(/^namespaces\[(\d+)\]$/);
-            if (match) {
-                pendingResults.push({namespace_id: parseInt(match[1]), result: 3});
-            }
-        }
-        for (const zone of allZones) {
-            pendingResults.push({namespace_id: 1, result: 3, params: zone});
-        }
-
         setHistory(prev => [
-            { name, results: pendingResults, validationErrors: [] },
+            { name, results: [], validationErrors: [] },
             ...prev.filter(e => e.name !== name),
         ]);
 
-        axios.post<CheckNameResponse>(baseUrl + 'api/check_name', payload)
-            .then(response => {
-                setHistory(prev => prev.map((e, i) =>
-                    i === 0 && e.name === name
-                        ? { name, results: response.data.results ?? [], validationErrors: response.data.validation_errors ?? [] }
-                        : e
-                ));
-            })
-            .catch(function (error) {
-                alert(error)
+        const updateEntry = (updater: (entry: HistoryEntry) => HistoryEntry) => {
+            setHistory(prev => prev.map((e, i) =>
+                i === 0 && e.name === name ? updater(e) : e
+            ));
+        };
+
+        try {
+            const response = await fetch(baseUrl + 'api/check_name', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload),
             });
+
+            const reader = response.body!.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, {stream: true});
+                const blocks = buffer.split('\n\n');
+                buffer = blocks.pop()!;
+
+                for (const block of blocks) {
+                    const lines = block.split('\n');
+                    const eventLine = lines.find(l => l.startsWith('event:'));
+                    const dataLine = lines.find(l => l.startsWith('data:'));
+                    if (!eventLine || !dataLine) continue;
+
+                    const eventType = eventLine.slice(6).trim();
+                    const data = JSON.parse(dataLine.slice(5).trim());
+
+                    if (eventType === 'pending') {
+                        updateEntry(e => ({...e, results: data as Namespace[]}));
+                    } else if (eventType === 'result') {
+                        updateEntry(e => ({
+                            ...e,
+                            results: e.results.map(ns =>
+                                ns.namespace_id === data.namespace_id && ns.params === data.params
+                                    ? {...ns, result: data.result}
+                                    : ns
+                            ),
+                        }));
+                    } else if (eventType === 'validation_error') {
+                        updateEntry(e => ({
+                            ...e,
+                            validationErrors: [...e.validationErrors, data as ValidationError],
+                        }));
+                    }
+                }
+            }
+        } catch (error) {
+            alert(error);
+        }
     };
 
     return (
