@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checker-frontend
+  namespace: checkers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checker-frontend
+  template:
+    metadata:
+      labels:
+        app: checker-frontend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: checker-frontend
+          image: ghcr.io/vladimirgolovanov/checker-frontend:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checker-frontend
+  namespace: checkers
+spec:
+  selector:
+    app: checker-frontend
+  ports:
+    - port: 80
+      targetPort: 80
