@@ -6,13 +6,14 @@ import NameBadge from "./Components/NameBadge.tsx";
 
 interface Namespace {
     namespace_id: number;
+    name: string;
     result: number;
     params?: string;
 }
 
 interface ValidationError {
-    namespace: number;
-    errors: string;
+    namespace_id: number;
+    errors: string[];
 }
 
 interface HistoryEntry {
@@ -173,15 +174,15 @@ function App() {
                         updateEntry(e => ({
                             ...e,
                             results: e.results.map(ns =>
-                                ns.namespace_id === data.namespace_id && ns.params === data.params
+                                ns.namespace_id === data.namespace_id && ns.name === data.name
                                     ? {...ns, result: data.result}
                                     : ns
                             ),
                         }));
-                    } else if (eventType === 'validation_error') {
+                    } else if (eventType === 'validation_errors') {
                         updateEntry(e => ({
                             ...e,
-                            validationErrors: [...e.validationErrors, data as ValidationError],
+                            validationErrors: (data ?? []) as ValidationError[],
                         }));
                     }
                 }
@@ -342,21 +343,29 @@ function App() {
 
                 {history.length > 0 && (
                     <ul className="list-group list-group-flush">
-                        {history.map((entry) => (
-                            <li key={entry.name} className="list-group-item">
-                                <strong>{entry.name}</strong><br />
-                                {entry.results.map((ns, i) => (
-                                    <span key={i}><NameBadge
-                                        name={ns.namespace_id === 1 && ns.params ? `${entry.name}.${ns.params}` : namespaceNames[ns.namespace_id]}
-                                        result={ns.result} /> </span>
-                                ))}
-                                {entry.validationErrors.map((ve, i) => (
-                                    <span key={i} className="text-danger ms-1">
-                                        {namespaceNames[ve.namespace]}: {ve.errors}
-                                    </span>
-                                ))}
-                            </li>
-                        ))}
+                        {history.map((entry) => {
+                            const errorNamespaceIds = new Set(entry.validationErrors.map(ve => ve.namespace_id));
+                            const resultNamespaceIds = [...new Set(entry.results.map(ns => ns.namespace_id))]
+                                .filter(id => !errorNamespaceIds.has(id));
+                            return (
+                                <li key={entry.name} className="list-group-item">
+                                    <strong>{entry.name}</strong><br />
+                                    {resultNamespaceIds.map((nsId) => (
+                                        <div key={nsId}>
+                                            <span className="me-1">{namespaceNames[nsId]}:</span>
+                                            {entry.results.filter(ns => ns.namespace_id === nsId).map((ns, i) => (
+                                                <span key={i}><NameBadge name={ns.name} result={ns.result} /> </span>
+                                            ))}
+                                        </div>
+                                    ))}
+                                    {entry.validationErrors.map((ve, i) => (
+                                        <div key={i} className="text-danger">
+                                            {namespaceNames[ve.namespace_id]}: {ve.errors.join(', ')}
+                                        </div>
+                                    ))}
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </Container>
