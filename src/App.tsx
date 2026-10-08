@@ -43,9 +43,10 @@ function App() {
         10: "Telegram bot",
         11: "Etsy shop",
         12: "Pinterest",
+        13: "Youtube",
     };
 
-    const socialNetworkIndexes: number[] = [0, 5, 6, 9, 10, 12];
+    const socialNetworkIndexes: number[] = [0, 5, 6, 9, 10, 12, 13];
     // const shopsIndexes: number[] = [11];
     const devIndexes: number[] = [7, 8];
 
